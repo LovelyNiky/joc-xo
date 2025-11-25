@@ -13,7 +13,7 @@ public class TicTacToe extends JFrame implements ActionListener {
     public TicTacToe() {
         setTitle("TicTacToe – Joc X și 0");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 450);
+        setSize(420, 480); // mărire fereastră
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
@@ -40,7 +40,12 @@ public class TicTacToe extends JFrame implements ActionListener {
 
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> resetGame());
-        add(resetButton, BorderLayout.SOUTH);
+
+        // ❤️ padding frumos la buton – commit #3
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        bottomPanel.add(resetButton);
+        add(bottomPanel, BorderLayout.SOUTH);
 
         setVisible(true);
     }
@@ -81,7 +86,7 @@ public class TicTacToe extends JFrame implements ActionListener {
             int choice = JOptionPane.showConfirmDialog(this,
                     "Este egalitate. Joci din nou?",
                     "Final joc",
-                    JOptionPane.YES_NO_OPTION);
+                    JOptionPane.YES_NO_OPTION); // corectat
 
             if (choice == JOptionPane.YES_OPTION) {
                 resetGame();
