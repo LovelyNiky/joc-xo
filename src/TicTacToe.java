@@ -11,13 +11,13 @@ public class TicTacToe extends JFrame implements ActionListener {
     private JLabel statusLabel;
 
     public TicTacToe() {
-        setTitle("X și 0");
+        setTitle("TicTacToe – Joc X și 0");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 450);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        statusLabel = new JLabel("Rândul lui X", SwingConstants.CENTER);
+        statusLabel = new JLabel("Turul jucătorului: X", SwingConstants.CENTER);
         statusLabel.setFont(new Font("Arial", Font.BOLD, 20));
         add(statusLabel, BorderLayout.NORTH);
 
@@ -55,16 +55,16 @@ public class TicTacToe extends JFrame implements ActionListener {
 
         if (xTurn) {
             source.setText("X");
-            statusLabel.setText("Rândul lui 0");
+            statusLabel.setText("Turul jucătorului: 0");
         } else {
             source.setText("0");
-            statusLabel.setText("Rândul lui X");
+            statusLabel.setText("Turul jucătorului: X");
         }
 
         moves++;
         if (checkWin()) {
             String winner = xTurn ? "X" : "0";
-            statusLabel.setText("A câștigat " + winner);
+            statusLabel.setText("A câștigat: " + winner);
             disableBoard();
             int choice = JOptionPane.showConfirmDialog(this,
                     "A câștigat " + winner + ". Joci din nou?",
@@ -77,11 +77,12 @@ public class TicTacToe extends JFrame implements ActionListener {
         }
 
         if (moves == 9) {
-            statusLabel.setText("Remiză");
+            statusLabel.setText("Egalitate!");
             int choice = JOptionPane.showConfirmDialog(this,
-                    "Remiză. Joci din nou?",
+                    "Este egalitate. Joci din nou?",
                     "Final joc",
                     JOptionPane.YES_NO_OPTION);
+
             if (choice == JOptionPane.YES_OPTION) {
                 resetGame();
             }
@@ -128,7 +129,7 @@ public class TicTacToe extends JFrame implements ActionListener {
     private void resetGame() {
         xTurn = true;
         moves = 0;
-        statusLabel.setText("Rândul lui X");
+        statusLabel.setText("Turul jucătorului: X");
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 buttons[i][j].setText("");
