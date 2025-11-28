@@ -5,7 +5,10 @@ import java.awt.event.ActionListener;
 
 public class TicTacToe extends JFrame implements ActionListener {
 
-    private JButton[][] buttons = new JButton[3][3];
+    private JButton[][] buttons;
+    private int boardSize = 3;
+    private int winLength = 3;
+
     private boolean xTurn = true;
     private int moves = 0;
     private int scoreX = 0;
@@ -13,15 +16,14 @@ public class TicTacToe extends JFrame implements ActionListener {
 
     private JLabel statusLabel;
     private JLabel scoreLabel;
-    private JLabel trophyLabel;
 
     private JPanel menuPanel;
     private JPanel gamePanel;
+    private JPanel gridPanel;
 
     public TicTacToe() {
         setTitle("TicTacToe – Joc X și 0");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(450, 520);
         setLocationRelativeTo(null);
         setLayout(new CardLayout());
 
@@ -36,26 +38,32 @@ public class TicTacToe extends JFrame implements ActionListener {
     }
 
     private void createMenuPanel() {
-        menuPanel = new JPanel();
-        menuPanel.setLayout(new GridBagLayout());
+        menuPanel = new JPanel(new GridBagLayout());
         menuPanel.setBackground(new Color(40, 40, 40));
 
-        JButton startButton = new JButton("Start Game");
+        JButton standardButton = new JButton("Standard 3 x 3");
+        JButton bigButton = new JButton("Big 9 x 9 (4 in linie)");
         JButton exitButton = new JButton("Exit");
 
-        startButton.setFont(new Font("Arial", Font.BOLD, 26));
-        exitButton.setFont(new Font("Arial", Font.BOLD, 26));
-        startButton.addActionListener(e -> showGame());
+        Font menuFont = new Font("Arial", Font.BOLD, 22);
+        standardButton.setFont(menuFont);
+        bigButton.setFont(menuFont);
+        exitButton.setFont(menuFont);
+
+        standardButton.addActionListener(e -> startStandardMode());
+        bigButton.addActionListener(e -> startBigMode());
         exitButton.addActionListener(e -> System.exit(0));
 
-        startButton.setFocusPainted(false);
-        exitButton.setFocusPainted(false);
-
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(25, 0, 25, 0);
+        gbc.insets = new Insets(20, 0, 20, 0);
+
         gbc.gridy = 0;
-        menuPanel.add(startButton, gbc);
+        menuPanel.add(standardButton, gbc);
+
         gbc.gridy = 1;
+        menuPanel.add(bigButton, gbc);
+
+        gbc.gridy = 2;
         menuPanel.add(exitButton, gbc);
     }
 
@@ -78,67 +86,95 @@ public class TicTacToe extends JFrame implements ActionListener {
         topPanel.add(scoreLabel);
         gamePanel.add(topPanel, BorderLayout.NORTH);
 
-        // Layered pane pentru grid + trofeu
-        JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setPreferredSize(new Dimension(400, 400));
+        gridPanel = new JPanel();
+        gamePanel.add(gridPanel, BorderLayout.CENTER);
 
-        JPanel gridPanel = new JPanel(new GridLayout(3, 3));
+        JButton resetButton = new JButton("Reset Board");
+        JButton backButton = new JButton("Back to Menu");
+
+        resetButton.setFont(new Font("Arial", Font.BOLD, 16));
+        backButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+        resetButton.setBackground(new Color(90, 90, 90));
+        resetButton.setForeground(Color.WHITE);
+        backButton.setBackground(new Color(90, 90, 90));
+        backButton.setForeground(Color.WHITE);
+
+        resetButton.addActionListener(e -> resetGame());
+        backButton.addActionListener(e -> showMenu());
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(new Color(30, 30, 30));
+        bottomPanel.add(resetButton);
+        bottomPanel.add(backButton);
+
+        gamePanel.add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private void buildBoard() {
+        gridPanel.removeAll();
         gridPanel.setBackground(new Color(50, 50, 50));
-        gridPanel.setBounds(0, 0, 400, 400);
-        layeredPane.add(gridPanel, Integer.valueOf(0));
+        gridPanel.setLayout(new GridLayout(boardSize, boardSize));
 
-        Font buttonFont = new Font("Arial", Font.BOLD, 60);
+        buttons = new JButton[boardSize][boardSize];
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
+        int fontSize = (boardSize == 3) ? 60 : 24;
+        Font buttonFont = new Font("Arial", Font.BOLD, fontSize);
+
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 JButton b = new JButton();
                 b.setFont(buttonFont);
-                b.setFocusPainted(false);
                 b.setBackground(new Color(60, 60, 60));
                 b.setForeground(Color.WHITE);
+                b.setFocusPainted(false);
                 b.addActionListener(this);
                 buttons[i][j] = b;
                 gridPanel.add(b);
             }
         }
 
-        trophyLabel = new JLabel("🏆", SwingConstants.CENTER);
-        trophyLabel.setFont(new Font("Arial", Font.BOLD, 150));
-        trophyLabel.setForeground(Color.YELLOW);
-        trophyLabel.setBounds(0, 100, 400, 200);
-        trophyLabel.setVisible(false);
+        moves = 0;
+        xTurn = true;
+        statusLabel.setText("Turul jucătorului: X");
 
-        layeredPane.add(trophyLabel, Integer.valueOf(1));
-        gamePanel.add(layeredPane, BorderLayout.CENTER);
+        gridPanel.revalidate();
+        gridPanel.repaint();
+    }
 
-        JButton resetButton = new JButton("Reset Board");
-        resetButton.setFont(new Font("Arial", Font.BOLD, 18));
-        resetButton.addActionListener(e -> resetGame());
-        resetButton.setBackground(new Color(90, 90, 90));
-        resetButton.setForeground(Color.WHITE);
+    private void startStandardMode() {
+        boardSize = 3;
+        winLength = 3;
+        setSize(450, 520);
+        setLocationRelativeTo(null);
+        buildBoard();
+        showGame();
+    }
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(new Color(30, 30, 30));
-        bottomPanel.add(resetButton);
-        gamePanel.add(bottomPanel, BorderLayout.SOUTH);
+    private void startBigMode() {
+        boardSize = 9;
+        winLength = 4;
+        setSize(900, 950);
+        setLocationRelativeTo(null);
+        buildBoard();
+        showGame();
     }
 
     private void showMenu() {
-        CardLayout cl = (CardLayout) getContentPane().getLayout();
-        cl.show(getContentPane(), "menu");
+        ((CardLayout) getContentPane().getLayout()).show(getContentPane(), "menu");
     }
 
     private void showGame() {
-        resetGame();
-        trophyLabel.setVisible(false);
-        CardLayout cl = (CardLayout) getContentPane().getLayout();
-        cl.show(getContentPane(), "game");
+        ((CardLayout) getContentPane().getLayout()).show(getContentPane(), "game");
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         JButton source = (JButton) e.getSource();
-        if (!source.getText().equals("")) return;
+
+        if (!source.getText().equals("")) {
+            return;
+        }
 
         if (xTurn) {
             source.setText("X");
@@ -151,15 +187,17 @@ public class TicTacToe extends JFrame implements ActionListener {
         }
 
         moves++;
-        if (checkWin()) {
-            String winner = xTurn ? "X" : "0";
-            showWinner(winner);
+
+        String currentSymbol = xTurn ? "X" : "0";
+
+        if (checkWinAndHighlight(currentSymbol)) {
+            showWinner(currentSymbol);
             return;
         }
 
-        if (moves == 9) {
+        if (moves == boardSize * boardSize) {
             statusLabel.setText("Egalitate!");
-            trophyLabel.setVisible(true);
+            disableBoard();
             return;
         }
 
@@ -169,100 +207,80 @@ public class TicTacToe extends JFrame implements ActionListener {
     private void showWinner(String winner) {
         statusLabel.setText("A câștigat: " + winner);
         disableBoard();
-        trophyLabel.setVisible(true);
 
-        if (winner.equals("X")) scoreX++;
-        else scoreO++;
+        if (winner.equals("X")) {
+            scoreX++;
+        } else {
+            scoreO++;
+        }
         scoreLabel.setText("Scor: X = " + scoreX + " | 0 = " + scoreO);
-
-        colorWinLine(winner);
     }
 
-    private void colorWinLine(String winner) {
+    private boolean checkWinAndHighlight(String s) {
+        int[][] directions = {
+                {1, 0},  // jos
+                {0, 1},  // dreapta
+                {1, 1},  // diagonală principală
+                {1, -1}  // diagonală secundară
+        };
+
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                if (!buttons[i][j].getText().equals(s)) continue;
+
+                for (int[] d : directions) {
+                    int dr = d[0];
+                    int dc = d[1];
+
+                    int count = 1;
+                    int r = i + dr;
+                    int c = j + dc;
+
+                    while (r >= 0 && r < boardSize &&
+                            c >= 0 && c < boardSize &&
+                            buttons[r][c].getText().equals(s)) {
+                        count++;
+                        r += dr;
+                        c += dc;
+                    }
+
+                    if (count >= winLength) {
+                        highlightLine(i, j, dr, dc, s);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void highlightLine(int startRow, int startCol, int dr, int dc, String s) {
         Color winColor = new Color(255, 200, 0);
+        int r = startRow;
+        int c = startCol;
+        int highlighted = 0;
 
-        for (int i = 0; i < 3; i++)
-            if (buttons[i][0].getText().equals(winner) &&
-                    buttons[i][1].getText().equals(winner) &&
-                    buttons[i][2].getText().equals(winner))
-            {
-                buttons[i][0].setBackground(winColor);
-                buttons[i][1].setBackground(winColor);
-                buttons[i][2].setBackground(winColor);
-                return;
-            }
-
-        for (int j = 0; j < 3; j++)
-            if (buttons[0][j].getText().equals(winner) &&
-                    buttons[1][j].getText().equals(winner) &&
-                    buttons[2][j].getText().equals(winner))
-            {
-                buttons[0][j].setBackground(winColor);
-                buttons[1][j].setBackground(winColor);
-                buttons[2][j].setBackground(winColor);
-                return;
-            }
-
-        if (buttons[0][0].getText().equals(winner) &&
-                buttons[1][1].getText().equals(winner) &&
-                buttons[2][2].getText().equals(winner))
-        {
-            buttons[0][0].setBackground(winColor);
-            buttons[1][1].setBackground(winColor);
-            buttons[2][2].setBackground(winColor);
+        while (r >= 0 && r < boardSize &&
+                c >= 0 && c < boardSize &&
+                buttons[r][c].getText().equals(s) &&
+                highlighted < winLength) {
+            buttons[r][c].setBackground(winColor);
+            highlighted++;
+            r += dr;
+            c += dc;
         }
-
-        if (buttons[0][2].getText().equals(winner) &&
-                buttons[1][1].getText().equals(winner) &&
-                buttons[2][0].getText().equals(winner))
-        {
-            buttons[0][2].setBackground(winColor);
-            buttons[1][1].setBackground(winColor);
-            buttons[2][0].setBackground(winColor);
-        }
-    }
-
-    private boolean checkWin() {
-        String s = xTurn ? "X" : "0";
-
-        for (int i = 0; i < 3; i++)
-            if (buttons[i][0].getText().equals(s) &&
-                    buttons[i][1].getText().equals(s) &&
-                    buttons[i][2].getText().equals(s)) return true;
-
-        for (int j = 0; j < 3; j++)
-            if (buttons[0][j].getText().equals(s) &&
-                    buttons[1][j].getText().equals(s) &&
-                    buttons[2][j].getText().equals(s)) return true;
-
-        return (buttons[0][0].getText().equals(s) &&
-                buttons[1][1].getText().equals(s) &&
-                buttons[2][2].getText().equals(s))
-                ||
-                (buttons[0][2].getText().equals(s) &&
-                        buttons[1][1].getText().equals(s) &&
-                        buttons[2][0].getText().equals(s));
     }
 
     private void resetGame() {
-        moves = 0;
-        xTurn = true;
-        trophyLabel.setVisible(false);
-        statusLabel.setText("Turul jucătorului: X");
-
-        for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 3; j++) {
-                buttons[i][j].setText("");
-                buttons[i][j].setEnabled(true);
-                buttons[i][j].setBackground(new Color(60, 60, 60));
-                buttons[i][j].setForeground(Color.WHITE);
-            }
+        buildBoard();
     }
 
     private void disableBoard() {
-        for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 3; j++)
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 buttons[i][j].setEnabled(false);
+            }
+        }
     }
 
     public static void main(String[] args) {
